@@ -1,0 +1,31 @@
+terraform {
+  required_providers {
+    oneshot = {
+      source = "winebarrel/oneshot"
+    }
+  }
+}
+
+provider "oneshot" {
+}
+
+resource "oneshot_run" "hello" {
+  command      = "echo 'hello, oneshot'"
+  plan_command = "echo \"hello, oneshot (plan=$ONESHOT_PLAN)\""
+}
+
+resource "terraform_data" "hello_stdout" {
+  triggers_replace = oneshot_run.hello.run_at
+
+  provisioner "local-exec" {
+    command = "echo '${oneshot_run.hello.stdout}'"
+  }
+}
+
+resource "terraform_data" "hello_stderr" {
+  triggers_replace = oneshot_run.hello.run_at
+
+  provisioner "local-exec" {
+    command = "echo '${oneshot_run.hello.stderr}'"
+  }
+}
