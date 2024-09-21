@@ -155,6 +155,12 @@ func (r *RunResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 func (r *RunResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
+		resp.Diagnostics.AddWarning(
+			"Resource Destruction Considerations",
+			"Applying this resource destruction will only remove the resource from the Terraform state "+
+				"and will not call the deletion API due to API limitations. Manually use the web "+
+				"interface to fully destroy this resource.",
+		)
 		return
 	}
 
