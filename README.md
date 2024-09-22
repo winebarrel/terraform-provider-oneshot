@@ -1,6 +1,7 @@
 # terraform-provider-oneshot
 
 [![CI](https://github.com/winebarrel/terraform-provider-oneshot/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/terraform-provider-oneshot/actions/workflows/ci.yml)
+[![terraform docs](https://img.shields.io/badge/terraform-docs-%35835CC?logo=terraform)](https://registry.terraform.io/providers/winebarrel/oneshot/latest/docs)
 
 Terraform provider for running one-shot commands.
 
