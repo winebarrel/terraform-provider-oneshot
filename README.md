@@ -43,7 +43,7 @@ resource "terraform_data" "hello_stderr" {
 cp oneshot.tf.sample oneshot.tf
 make
 make tf-plan
-make tf-apply
 cat plan-stdout.log
 cat plan-stderr.log
+make tf-apply
 ```
