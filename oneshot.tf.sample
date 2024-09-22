@@ -11,7 +11,7 @@ provider "oneshot" {
 
 resource "oneshot_run" "hello" {
   command      = "echo 'hello, oneshot'"
-  plan_command = "echo \"hello, oneshot (plan=$ONESHOT_PLAN)\""
+  plan_command = "echo \"hello, oneshot (plan=$ONESHOT_PLAN)\" ; echo planerr 1>&2"
 }
 
 resource "terraform_data" "hello_stdout" {
