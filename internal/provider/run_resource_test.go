@@ -35,6 +35,8 @@ func TestRun_Basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("oneshot_run.hello", "shell"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout", "hello\n"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr", "world\n"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
 					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
 					func(s *terraform.State) error {
 						stdout, _ := os.ReadFile("plan-stdout.log")
@@ -72,6 +74,8 @@ func TestRun_WithoutPlanCommand(t *testing.T) {
 					resource.TestCheckNoResourceAttr("oneshot_run.hello", "shell"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout", "hello\n"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr", "world\n"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
 					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
 					func(s *terraform.State) error {
 						// No log
@@ -112,6 +116,8 @@ func TestRun_WithShell(t *testing.T) {
 					resource.TestCheckResourceAttr("oneshot_run.hello", "shell", "/bin/sh -c"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout", "/bin/sh\n"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr", "world\n"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
 					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
 					func(s *terraform.State) error {
 						stdout, _ := os.ReadFile("plan-stdout.log")
@@ -150,6 +156,8 @@ func TestRun_RunPlanCommandonlyOnce(t *testing.T) {
 					resource.TestCheckNoResourceAttr("oneshot_run.hello", "shell"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout", "hello\n"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr", "world\n"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
 					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
 					func(s *terraform.State) error {
 						stdout, _ := os.ReadFile("plan-stdout.log")
@@ -183,6 +191,8 @@ func TestRun_RunPlanCommandonlyOnce(t *testing.T) {
 					resource.TestCheckNoResourceAttr("oneshot_run.hello", "shell"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout", "hello\n"),
 					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr", "world\n"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
 					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
 					func(s *terraform.State) error {
 						// No log
