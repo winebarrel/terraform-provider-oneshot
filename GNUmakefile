@@ -30,4 +30,4 @@ tf-apply: dev.tfrc
 
 .PHONY: tf-clean
 tf-clean: clean
-	rm -f dev.tfrc terraform.tfstate*
+	rm -f dev.tfrc terraform.tfstate* *.log
