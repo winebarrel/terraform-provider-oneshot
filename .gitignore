@@ -26,7 +26,7 @@ go.work.sum
 
 /terraform-provider-oneshot
 /dev.tfrc
-*.tf
+/*.tf
 *.tfstate
 *.tfstate.*
 *.log
