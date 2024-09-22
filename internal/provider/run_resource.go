@@ -178,6 +178,11 @@ func (r *RunResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReq
 		return
 	}
 
+	if !req.State.Raw.IsNull() {
+		// NOTE: Do not run plan command after creating tfstate
+		return
+	}
+
 	if data.PlanCommand.IsNull() {
 		return
 	}
