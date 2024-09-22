@@ -3,14 +3,39 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 
 	"github.com/mattn/go-shellwords"
 )
 
-func ExecCmd(shell string, command string, extraEnvs ...string) (string, string, error) {
-	envs, args, err := shellwords.ParseWithEnvs(shell)
+type Cmd struct {
+	Shell  string
+	Stdout string
+	Stderr string
+}
+
+func NewCmd(shell string) *Cmd {
+	cmd := &Cmd{
+		Shell: shell,
+	}
+
+	return cmd
+}
+
+func NewCmdWithLog(shell string, stdout string, stderr string) *Cmd {
+	cmd := &Cmd{
+		Shell:  shell,
+		Stdout: stdout,
+		Stderr: stderr,
+	}
+
+	return cmd
+}
+
+func (c *Cmd) Run(command string, extraEnvs ...string) (string, string, error) {
+	envs, args, err := shellwords.ParseWithEnvs(c.Shell)
 
 	if err != nil {
 		return "", "", err
@@ -30,8 +55,32 @@ func ExecCmd(shell string, command string, extraEnvs ...string) (string, string,
 	cmd.Env = append(os.Environ(), envs...)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+
+	if c.Stdout != "" {
+		f, err := os.OpenFile(c.Stdout, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0600)
+
+		if err != nil {
+			return "", "", err
+		}
+
+		defer f.Close()
+		cmd.Stdout = io.MultiWriter(&stdout, f)
+	} else {
+		cmd.Stdout = &stdout
+	}
+
+	if c.Stderr != "" {
+		f, err := os.OpenFile(c.Stderr, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0600)
+
+		if err != nil {
+			return "", "", err
+		}
+
+		defer f.Close()
+		cmd.Stderr = io.MultiWriter(&stderr, f)
+	} else {
+		cmd.Stderr = &stderr
+	}
 
 	err = cmd.Run()
 

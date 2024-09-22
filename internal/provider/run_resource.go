@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/winebarrel/terraform-provider-oneshot/internal/util"
@@ -25,14 +26,14 @@ type RunResource struct {
 }
 
 type RunResourceModel struct {
-	Command     types.String `tfsdk:"command"`
-	PlanCommand types.String `tfsdk:"plan_command"`
-	Shell       types.String `tfsdk:"shell"`
-	Stdout      types.String `tfsdk:"stdout"`
-	Stderr      types.String `tfsdk:"stderr"`
-	PlanStdout  types.String `tfsdk:"plan_stdout"`
-	PlanStderr  types.String `tfsdk:"plan_stderr"`
-	RunAt       types.String `tfsdk:"run_at"`
+	Command       types.String `tfsdk:"command"`
+	PlanCommand   types.String `tfsdk:"plan_command"`
+	Shell         types.String `tfsdk:"shell"`
+	Stdout        types.String `tfsdk:"stdout"`
+	Stderr        types.String `tfsdk:"stderr"`
+	PlanStdoutLog types.String `tfsdk:"plan_stdout_log"`
+	PlanStderrLog types.String `tfsdk:"plan_stderr_log"`
+	RunAt         types.String `tfsdk:"run_at"`
 }
 
 func (data RunResourceModel) Run(shell string) (string, string, error) {
@@ -40,7 +41,8 @@ func (data RunResourceModel) Run(shell string) (string, string, error) {
 		shell = data.Shell.ValueString()
 	}
 
-	return util.ExecCmd(shell, data.Command.ValueString())
+	cmd := util.NewCmd(shell)
+	return cmd.Run(data.Command.ValueString())
 }
 
 func (data RunResourceModel) Plan(shell string) (string, string, error) {
@@ -48,7 +50,8 @@ func (data RunResourceModel) Plan(shell string) (string, string, error) {
 		shell = data.Shell.ValueString()
 	}
 
-	return util.ExecCmd(shell, data.PlanCommand.ValueString(), "ONESHOT_PLAN=1")
+	cmd := util.NewCmdWithLog(shell, data.PlanStdoutLog.ValueString(), data.PlanStderrLog.ValueString())
+	return cmd.Run(data.PlanCommand.ValueString(), "ONESHOT_PLAN=1")
 }
 
 func (r *RunResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -87,13 +90,17 @@ func (r *RunResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				MarkdownDescription: "Stderr of the command.",
 				Computed:            true,
 			},
-			"plan_stdout": schema.StringAttribute{
-				MarkdownDescription: "Stdout of the plan command.",
+			"plan_stdout_log": schema.StringAttribute{
+				MarkdownDescription: "Stdout log file of the plan command.",
+				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString("plan-stdout.log"),
 			},
-			"plan_stderr": schema.StringAttribute{
-				MarkdownDescription: "Stderr of the plan command.",
+			"plan_stderr_log": schema.StringAttribute{
+				MarkdownDescription: "Stderr log file of the plan command.",
+				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString("plan-stderr.log"),
 			},
 			"run_at": schema.StringAttribute{
 				MarkdownDescription: "Command execution time.",
@@ -171,19 +178,13 @@ func (r *RunResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReq
 		return
 	}
 
-	if !data.PlanCommand.IsNull() {
-		stdout, stderr, err := data.Plan(r.defaultShell)
-
-		if err != nil {
-			resp.Diagnostics.AddError("Plan Command Error", fmt.Sprintf("Unable to plan command, got error: %s", err))
-		}
-
-		data.PlanStdout = types.StringValue(stdout)
-		data.PlanStderr = types.StringValue(stderr)
-	} else {
-		data.PlanStdout = types.StringNull()
-		data.PlanStderr = types.StringNull()
+	if data.PlanCommand.IsNull() {
+		return
 	}
 
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &data)...)
+	_, _, err := data.Plan(r.defaultShell)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Plan Command Error", fmt.Sprintf("Unable to plan command, got error: %s", err))
+	}
 }

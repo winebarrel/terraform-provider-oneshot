@@ -28,3 +28,5 @@ go.work.sum
 /dev.tfrc
 *.tf
 *.tfstate
+*.tfstate.*
+*.log

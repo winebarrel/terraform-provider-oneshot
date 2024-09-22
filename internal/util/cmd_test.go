@@ -1,6 +1,7 @@
 package util_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,30 +9,54 @@ import (
 	"github.com/winebarrel/terraform-provider-oneshot/internal/util"
 )
 
-func TestExecCmd_OK(t *testing.T) {
+func TestCmdRun_OK(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	stdout, stderr, err := util.ExecCmd("/bin/sh -c", "echo stdout ; echo stderr 1>&2")
+	cmd := util.NewCmd("/bin/bash -c")
+	stdout, stderr, err := cmd.Run("echo stdout ; echo stderr 1>&2")
 
 	require.NoError(err)
 	assert.Equal("stdout\n", stdout)
 	assert.Equal("stderr\n", stderr)
 }
 
-func TestExecCmd_WithEnv(t *testing.T) {
+func TestCmdRun_WithEnv(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	stdout, stderr, err := util.ExecCmd("/bin/sh -c", "echo $FOO ; echo $ZOO 1>&2", "FOO=BAR", "ZOO=BAZ")
+	cmd := util.NewCmd("/bin/bash -c")
+	stdout, stderr, err := cmd.Run("echo $FOO ; echo $ZOO 1>&2", "FOO=BAR", "ZOO=BAZ")
 
 	require.NoError(err)
 	assert.Equal("BAR\n", stdout)
 	assert.Equal("BAZ\n", stderr)
 }
 
-func TestExecCmd_Err(t *testing.T) {
+func TestCmdRun_Err(t *testing.T) {
 	assert := assert.New(t)
-	_, _, err := util.ExecCmd("/bin/sh -c", "echo stdout ; echo stderr 1>&2 ; false")
+	cmd := util.NewCmd("/bin/bash -c")
+	_, _, err := cmd.Run("echo stdout ; echo stderr 1>&2 ; false")
 	assert.ErrorContains(err, "Failed to execute command: exit status 1\n[STDOUT] stdout\n\n[STDERR] stderr\n\n")
+}
+
+func TestCmdRun_WithLog(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	cmd := util.NewCmdWithLog("/bin/bash -c", "stdout.log", "stderr.log")
+	stdout, stderr, err := cmd.Run("echo stdout ; echo stderr 1>&2")
+
+	require.NoError(err)
+	assert.Equal("stdout\n", stdout)
+	assert.Equal("stderr\n", stderr)
+
+	stdoutLog, _ := os.ReadFile("stdout.log")
+	assert.Equal("stdout\n", string(stdoutLog))
+	stderrLog, _ := os.ReadFile("stderr.log")
+	assert.Equal("stderr\n", string(stderrLog))
 }
