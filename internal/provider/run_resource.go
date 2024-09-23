@@ -29,29 +29,33 @@ type RunResourceModel struct {
 	Command       types.String `tfsdk:"command"`
 	PlanCommand   types.String `tfsdk:"plan_command"`
 	Shell         types.String `tfsdk:"shell"`
-	Stdout        types.String `tfsdk:"stdout"`
-	Stderr        types.String `tfsdk:"stderr"`
+	StdoutLog     types.String `tfsdk:"stdout_log"`
+	StderrLog     types.String `tfsdk:"stderr_log"`
 	PlanStdoutLog types.String `tfsdk:"plan_stdout_log"`
 	PlanStderrLog types.String `tfsdk:"plan_stderr_log"`
 	RunAt         types.String `tfsdk:"run_at"`
 }
 
-func (data RunResourceModel) Run(shell string) (string, string, error) {
+func (data RunResourceModel) Run(shell string) error {
 	if !data.Shell.IsNull() {
 		shell = data.Shell.ValueString()
 	}
 
-	cmd := util.NewCmd(shell)
-	return cmd.Run(data.Command.ValueString())
+	cmd := util.NewCmd(shell, data.StdoutLog.ValueString(), data.StderrLog.ValueString())
+	_, _, err := cmd.Run(data.Command.ValueString())
+
+	return err
 }
 
-func (data RunResourceModel) Plan(shell string) (string, string, error) {
+func (data RunResourceModel) Plan(shell string) error {
 	if !data.Shell.IsNull() {
 		shell = data.Shell.ValueString()
 	}
 
-	cmd := util.NewCmdWithLog(shell, data.PlanStdoutLog.ValueString(), data.PlanStderrLog.ValueString())
-	return cmd.Run(data.PlanCommand.ValueString(), "ONESHOT_PLAN=1")
+	cmd := util.NewCmd(shell, data.PlanStdoutLog.ValueString(), data.PlanStderrLog.ValueString())
+	_, _, err := cmd.Run(data.PlanCommand.ValueString(), "ONESHOT_PLAN=1")
+
+	return err
 }
 
 func (r *RunResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -82,13 +86,17 @@ func (r *RunResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"stdout": schema.StringAttribute{
-				MarkdownDescription: "Stdout of the command.",
+			"stdout_log": schema.StringAttribute{
+				MarkdownDescription: "Stdout log file of the command.",
+				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString("stdout.log"),
 			},
-			"stderr": schema.StringAttribute{
-				MarkdownDescription: "Stderr of the command.",
+			"stderr_log": schema.StringAttribute{
+				MarkdownDescription: "Stderr log file of the command.",
+				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString("stderr.log"),
 			},
 			"plan_stdout_log": schema.StringAttribute{
 				MarkdownDescription: "Stdout log file of the plan command.",
@@ -135,14 +143,12 @@ func (r *RunResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	stdout, stderr, err := data.Run(r.defaultShell)
+	err := data.Run(r.defaultShell)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Run Command Error", fmt.Sprintf("Unable to run command, got error: %s", err))
 	}
 
-	data.Stdout = types.StringValue(stdout)
-	data.Stderr = types.StringValue(stderr)
 	data.RunAt = types.StringValue(time.Now().Local().String())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -187,7 +193,7 @@ func (r *RunResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReq
 		return
 	}
 
-	_, _, err := data.Plan(r.defaultShell)
+	err := data.Plan(r.defaultShell)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Plan Command Error", fmt.Sprintf("Unable to plan command, got error: %s", err))

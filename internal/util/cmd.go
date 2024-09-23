@@ -16,15 +16,7 @@ type Cmd struct {
 	Stderr string
 }
 
-func NewCmd(shell string) *Cmd {
-	cmd := &Cmd{
-		Shell: shell,
-	}
-
-	return cmd
-}
-
-func NewCmdWithLog(shell string, stdout string, stderr string) *Cmd {
+func NewCmd(shell string, stdout string, stderr string) *Cmd {
 	cmd := &Cmd{
 		Shell:  shell,
 		Stdout: stdout,
