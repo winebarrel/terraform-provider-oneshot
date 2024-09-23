@@ -58,6 +58,53 @@ func TestRun_Basic(t *testing.T) {
 	})
 }
 
+func TestRun_PlanEnv(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "oneshot_run" "hello" {
+						command      = "echo plan=$ONESHOT_PLAN ; echo plan=$ONESHOT_PLAN 1>&2"
+						plan_command = "echo plan=$ONESHOT_PLAN ; echo plan=$ONESHOT_PLAN 1>&2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("oneshot_run.hello", "command", "echo plan=$ONESHOT_PLAN ; echo plan=$ONESHOT_PLAN 1>&2"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_command", "echo plan=$ONESHOT_PLAN ; echo plan=$ONESHOT_PLAN 1>&2"),
+					resource.TestCheckNoResourceAttr("oneshot_run.hello", "shell"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "stdout_log", "stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "stderr_log", "stderr.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stdout_log", "plan-stdout.log"),
+					resource.TestCheckResourceAttr("oneshot_run.hello", "plan_stderr_log", "plan-stderr.log"),
+					resource.TestMatchResourceAttr("oneshot_run.hello", "run_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+`)),
+					func(s *terraform.State) error {
+						stdout, _ := os.ReadFile("stdout.log")
+						assert.Equal("plan=\n", string(stdout))
+						stderr, _ := os.ReadFile("stderr.log")
+						assert.Equal("plan=\n", string(stderr))
+						return nil
+					},
+					func(s *terraform.State) error {
+						stdout, _ := os.ReadFile("plan-stdout.log")
+						assert.Equal("plan=1\n", string(stdout))
+						stderr, _ := os.ReadFile("plan-stderr.log")
+						assert.Equal("plan=1\n", string(stderr))
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
 func TestRun_WithoutPlanCommand(t *testing.T) {
 	assert := assert.New(t)
 
