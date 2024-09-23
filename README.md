@@ -10,7 +10,7 @@ Terraform provider for running one-shot commands.
 ```tf
 terraform {
   required_providers {
-    lambdazip = {
+    oneshot = {
       source  = "winebarrel/oneshot"
       version = ">= 0.1.1"
     }
