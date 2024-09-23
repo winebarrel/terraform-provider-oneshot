@@ -13,7 +13,7 @@ func TestCmdRun_OK(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	cmd := util.NewCmd("/bin/bash -c")
+	cmd := util.NewCmd("/bin/bash -c", "/dev/null", "/dev/null")
 	stdout, stderr, err := cmd.Run("echo stdout ; echo stderr 1>&2")
 
 	require.NoError(err)
@@ -25,7 +25,7 @@ func TestCmdRun_WithEnv(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	cmd := util.NewCmd("/bin/bash -c")
+	cmd := util.NewCmd("/bin/bash -c", "/dev/null", "/dev/null")
 	stdout, stderr, err := cmd.Run("echo $FOO ; echo $ZOO 1>&2", "FOO=BAR", "ZOO=BAZ")
 
 	require.NoError(err)
@@ -35,7 +35,7 @@ func TestCmdRun_WithEnv(t *testing.T) {
 
 func TestCmdRun_Err(t *testing.T) {
 	assert := assert.New(t)
-	cmd := util.NewCmd("/bin/bash -c")
+	cmd := util.NewCmd("/bin/bash -c", "/dev/null", "/dev/null")
 	_, _, err := cmd.Run("echo stdout ; echo stderr 1>&2 ; false")
 	assert.ErrorContains(err, "Failed to execute command: exit status 1\n[STDOUT] stdout\n\n[STDERR] stderr\n\n")
 }
@@ -48,7 +48,7 @@ func TestCmdRun_WithLog(t *testing.T) {
 	os.Chdir(t.TempDir())
 	defer os.Chdir(cwd)
 
-	cmd := util.NewCmdWithLog("/bin/bash -c", "stdout.log", "stderr.log")
+	cmd := util.NewCmd("/bin/bash -c", "stdout.log", "stderr.log")
 	stdout, stderr, err := cmd.Run("echo stdout ; echo stderr 1>&2")
 
 	require.NoError(err)

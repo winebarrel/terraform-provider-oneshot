@@ -55,9 +55,9 @@ resource "terraform_data" "hello_stderr" {
 - `plan_stderr_log` (String) Stderr log file of the plan command.
 - `plan_stdout_log` (String) Stdout log file of the plan command.
 - `shell` (String) Shell to execute the command.
+- `stderr_log` (String) Stderr log file of the command.
+- `stdout_log` (String) Stdout log file of the command.
 
 ### Read-Only
 
 - `run_at` (String) Command execution time.
-- `stderr` (String) Stderr of the command.
-- `stdout` (String) Stdout of the command.
