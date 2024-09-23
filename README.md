@@ -8,6 +8,15 @@ Terraform provider for running one-shot commands.
 ## Usage
 
 ```tf
+terraform {
+  required_providers {
+    oneshot = {
+      source  = "winebarrel/oneshot"
+      version = ">= 0.1.1"
+    }
+  }
+}
+
 provider "oneshot" {
   # shell = "/bin/bash -c"
 }
