@@ -31,22 +31,6 @@ resource "oneshot_run" "hello" {
   # plan_stdout_log = "plan-stdout.log"
   # plan_stderr_log = "plan-stderr.log"
 }
-
-resource "terraform_data" "hello_stdout" {
-  triggers_replace = oneshot_run.hello.run_at
-
-  provisioner "local-exec" {
-    command = "echo '${oneshot_run.hello.stdout}'"
-  }
-}
-
-resource "terraform_data" "hello_stderr" {
-  triggers_replace = oneshot_run.hello.run_at
-
-  provisioner "local-exec" {
-    command = "echo '${oneshot_run.hello.stderr}'"
-  }
-}
 ```
 
 ## Run locally for development
@@ -58,4 +42,6 @@ make tf-plan
 cat plan-stdout.log
 cat plan-stderr.log
 make tf-apply
+cat stdout.log
+cat stderr.log
 ```
