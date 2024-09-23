@@ -300,8 +300,6 @@ func TestRun_RenameLog(t *testing.T) {
 	})
 }
 
-// TODO: 異常系
-
 func TestRun_PlanErr(t *testing.T) {
 	cwd, _ := os.Getwd()
 	os.Chdir(t.TempDir())
