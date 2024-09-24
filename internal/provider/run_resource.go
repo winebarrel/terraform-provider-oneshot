@@ -51,7 +51,7 @@ func (data RunResourceModel) Run(shell string) error {
 			return err
 		}
 
-		defer os.Chdir(cwd)
+		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
 	cmd := util.NewCmd(shell, data.StdoutLog.ValueString(), data.StderrLog.ValueString())
@@ -73,7 +73,7 @@ func (data RunResourceModel) Plan(shell string) error {
 			return err
 		}
 
-		defer os.Chdir(cwd)
+		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
 	cmd := util.NewCmd(shell, data.PlanStdoutLog.ValueString(), data.PlanStderrLog.ValueString())
