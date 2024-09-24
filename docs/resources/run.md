@@ -44,6 +44,7 @@ resource "oneshot_run" "hello" {
 - `shell` (String) Shell to execute the command.
 - `stderr_log` (String) Stderr log file of the command.
 - `stdout_log` (String) Stdout log file of the command.
+- `working_dir` (String) Working directory.
 
 ### Read-Only
 
