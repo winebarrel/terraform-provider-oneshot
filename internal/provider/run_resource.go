@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"time"
 
@@ -33,12 +34,24 @@ type RunResourceModel struct {
 	StderrLog     types.String `tfsdk:"stderr_log"`
 	PlanStdoutLog types.String `tfsdk:"plan_stdout_log"`
 	PlanStderrLog types.String `tfsdk:"plan_stderr_log"`
+	WorkingDir    types.String `tfsdk:"working_dir"`
 	RunAt         types.String `tfsdk:"run_at"`
 }
 
 func (data RunResourceModel) Run(shell string) error {
 	if !data.Shell.IsNull() {
 		shell = data.Shell.ValueString()
+	}
+
+	if !data.WorkingDir.IsNull() {
+		cwd, _ := os.Getwd()
+		err := os.Chdir(data.WorkingDir.ValueString())
+
+		if err != nil {
+			return err
+		}
+
+		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
 	cmd := util.NewCmd(shell, data.StdoutLog.ValueString(), data.StderrLog.ValueString())
@@ -50,6 +63,17 @@ func (data RunResourceModel) Run(shell string) error {
 func (data RunResourceModel) Plan(shell string) error {
 	if !data.Shell.IsNull() {
 		shell = data.Shell.ValueString()
+	}
+
+	if !data.WorkingDir.IsNull() {
+		cwd, _ := os.Getwd()
+		err := os.Chdir(data.WorkingDir.ValueString())
+
+		if err != nil {
+			return err
+		}
+
+		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
 	cmd := util.NewCmd(shell, data.PlanStdoutLog.ValueString(), data.PlanStderrLog.ValueString())
@@ -109,6 +133,10 @@ func (r *RunResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString("plan-stderr.log"),
+			},
+			"working_dir": schema.StringAttribute{
+				MarkdownDescription: "Working directory.",
+				Optional:            true,
 			},
 			"run_at": schema.StringAttribute{
 				MarkdownDescription: "Command execution time.",
