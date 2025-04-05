@@ -364,7 +364,7 @@ func TestRun_PlanErr(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Unable to plan command, got error: Failed to execute command: exit status 111\n\[STDOUT\] stdout\n\n\[STDERR\] stderr\n\n`,
+					`Unable to plan command, got error: failed to execute command: exit status 111\n\[STDOUT\] stdout\n\n\[STDERR\] stderr\n\n`,
 				),
 			},
 		},
@@ -387,7 +387,7 @@ func TestRun_RunErr(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Unable to run command, got error: Failed to execute command: exit status 111\n\[STDOUT\] stdout\n\n\[STDERR\] stderr\n\n`,
+					`Unable to run command, got error: failed to execute command: exit status 111\n\[STDOUT\] stdout\n\n\[STDERR\] stderr\n\n`,
 				),
 			},
 		},
