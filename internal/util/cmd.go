@@ -77,7 +77,7 @@ func (c *Cmd) Run(command string, extraEnvs ...string) (string, string, error) {
 	err = cmd.Run()
 
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to execute command: %w\n[STDOUT] %s\n[STDERR] %s\n", err, stdout.String(), stderr.String())
+		return "", "", fmt.Errorf("failed to execute command: %w\n[STDOUT] %s\n[STDERR] %s\n", err, stdout.String(), stderr.String()) //nolint:staticcheck
 	}
 
 	return stdout.String(), stderr.String(), nil

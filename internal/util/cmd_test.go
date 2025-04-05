@@ -37,7 +37,7 @@ func TestCmdRun_Err(t *testing.T) {
 	assert := assert.New(t)
 	cmd := util.NewCmd("/bin/bash -c", "/dev/null", "/dev/null")
 	_, _, err := cmd.Run("echo stdout ; echo stderr 1>&2 ; false")
-	assert.ErrorContains(err, "Failed to execute command: exit status 1\n[STDOUT] stdout\n\n[STDERR] stderr\n\n")
+	assert.ErrorContains(err, "failed to execute command: exit status 1\n[STDOUT] stdout\n\n[STDERR] stderr\n\n")
 }
 
 func TestCmdRun_WithLog(t *testing.T) {
