@@ -7,11 +7,15 @@ import (
 
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/winebarrel/terraform-provider-oneshot/internal/util"
 )
@@ -36,6 +40,7 @@ type RunResourceModel struct {
 	PlanStderrLog types.String `tfsdk:"plan_stderr_log"`
 	WorkingDir    types.String `tfsdk:"working_dir"`
 	RunAt         types.String `tfsdk:"run_at"`
+	Triggers      types.Map    `tfsdk:"triggers"`
 }
 
 func (data RunResourceModel) Run(shell string) error {
@@ -141,6 +146,18 @@ func (r *RunResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			"run_at": schema.StringAttribute{
 				MarkdownDescription: "Command execution time.",
 				Computed:            true,
+			},
+			"triggers": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Validators: []validator.Map{
+					mapvalidator.NoNullValues(),
+					mapvalidator.SizeAtLeast(1),
+					mapvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+				},
+				PlanModifiers: []planmodifier.Map{
+					mapplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
