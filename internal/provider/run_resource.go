@@ -131,13 +131,13 @@ func (r *RunResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				MarkdownDescription: "Stdout log file of the plan command.",
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("plan-stdout.log"),
+				Default:             stringdefault.StaticString("stdout.log"),
 			},
 			"plan_stderr_log": schema.StringAttribute{
 				MarkdownDescription: "Stderr log file of the plan command.",
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("plan-stderr.log"),
+				Default:             stringdefault.StaticString("stderr.log"),
 			},
 			"working_dir": schema.StringAttribute{
 				MarkdownDescription: "Working directory.",
